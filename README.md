@@ -67,4 +67,48 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para m
 
 ## Contribuição
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. "# AgafBot" 
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+
+## Para Desenvolvedores
+
+### Compilação de Executáveis
+
+Se você deseja criar executáveis para distribuição:
+
+1. Clone o repositório e instale as dependências:
+   ```
+   git clone https://github.com/agaf07/AgafBot.git
+   cd AgafBot
+   npm install
+   ```
+
+2. Crie o executável para Windows ou Linux:
+   ```
+   # Para Windows
+   npm run build-win
+   
+   # Para Linux
+   npm run build-linux
+   ```
+
+3. Os executáveis serão gerados na pasta `dist`:
+   - Windows: `dist/agafbot-win.exe`
+   - Linux: `dist/agafbot-linux`
+
+4. Distribua com os arquivos necessários:
+   - O executável gerado
+   - O arquivo `start.bat` (Windows) ou `start.sh` (Linux)
+   - O arquivo `INSTALL.md` com instruções
+
+### Instruções para Distribuição
+
+1. Crie uma pasta com os arquivos:
+   ```
+   /AgafBot
+     ├── agafbot-win.exe (ou agafbot-linux)
+     ├── start.bat (ou start.sh)
+     └── INSTALL.md
+   ```
+
+2. Compacte a pasta para distribuição.
+3. Os usuários só precisam extrair e executar o arquivo `start.bat` ou `start.sh`.

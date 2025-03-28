@@ -27,9 +27,6 @@
     "build": "pkg . --out-path=dist",
     "build-win": "pkg . --target=node16-win-x64 --output=dist/agafbot-win.exe",
     "build-linux": "pkg . --target=node16-linux-x64 --output=dist/agafbot-linux",
-    "package-win": "npm run build-win && mkdir -p ./dist/win && cp ./dist/agafbot-win.exe ./dist/win/ && cp ./start.bat ./dist/win/ && cp ./INSTALL.md ./dist/win/ && cd dist && rimraf agafbot-win.zip && 7z a -tzip agafbot-win.zip win/*",
-    "package-linux": "npm run build-linux && mkdir -p ./dist/linux && cp ./dist/agafbot-linux ./dist/linux/ && cp ./start.sh ./dist/linux/ && cp ./INSTALL.md ./dist/linux/ && cd dist && rimraf agafbot-linux.tar.gz && tar -czvf agafbot-linux.tar.gz linux/*",
-    "package-all": "npm run package-win && npm run package-linux",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
