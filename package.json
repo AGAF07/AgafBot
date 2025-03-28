@@ -3,10 +3,33 @@
   "version": "1.0.0",
   "description": "WhatsApp automation bot with AI-powered responses using Groq API",
   "main": "app.js",
+  "bin": "app.js",
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "views/**/*",
+      "database/**/*",
+      "models/**/*",
+      "routes/**/*",
+      "node_modules/sqlite3/lib/binding/**/*",
+      "node_modules/puppeteer/.local-chromium/**/*",
+      "install.js"
+    ],
+    "targets": [
+      "node16-win-x64",
+      "node16-linux-x64"
+    ]
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
     "init-db": "node database/init-db.js",
+    "build": "pkg . --out-path=dist",
+    "build-win": "pkg . --target=node16-win-x64 --output=dist/agafbot-win.exe",
+    "build-linux": "pkg . --target=node16-linux-x64 --output=dist/agafbot-linux",
+    "package-win": "npm run build-win && mkdir -p ./dist/win && cp ./dist/agafbot-win.exe ./dist/win/ && cp ./start.bat ./dist/win/ && cp ./INSTALL.md ./dist/win/ && cd dist && rimraf agafbot-win.zip && 7z a -tzip agafbot-win.zip win/*",
+    "package-linux": "npm run build-linux && mkdir -p ./dist/linux && cp ./dist/agafbot-linux ./dist/linux/ && cp ./start.sh ./dist/linux/ && cp ./INSTALL.md ./dist/linux/ && cd dist && rimraf agafbot-linux.tar.gz && tar -czvf agafbot-linux.tar.gz linux/*",
+    "package-all": "npm run package-win && npm run package-linux",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -33,6 +56,8 @@
     "whatsapp-web.js": "^1.22.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "pkg": "^5.8.1",
+    "rimraf": "^6.0.1"
   }
 }
