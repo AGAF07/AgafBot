@@ -22,7 +22,7 @@ O AgafBot é um chatbot para WhatsApp que utiliza inteligência artificial para 
 
 1. Clone o repositório:
    ```
-   git clone https://github.com/seu-usuario/AgafBot.git
+   git clone https://github.com/agaf07/AgafBot.git
    cd AgafBot
    ```
 
@@ -62,4 +62,4 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para m
 
 ## Contribuição
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. 
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. "# AgafBot" 
