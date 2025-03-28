@@ -31,16 +31,21 @@ O AgafBot é um chatbot para WhatsApp que utiliza inteligência artificial para 
    npm install
    ```
 
-3. Configure sua chave de API Groq (necessária para funcionalidades de IA):
+3. Inicialize o banco de dados:
+   ```
+   npm run init-db
+   ```
+
+4. Configure sua chave de API Groq (necessária para funcionalidades de IA):
    - Acesse o painel web em http://localhost:3000
    - Na página de configurações, adicione sua chave de API
 
-4. Inicie o aplicativo:
+5. Inicie o aplicativo:
    ```
    npm start
    ```
 
-5. Escaneie o QR code que aparecerá no terminal com seu WhatsApp para autenticar o bot.
+6. Escaneie o QR code que aparecerá no terminal com seu WhatsApp para autenticar o bot.
 
 ## Como Usar
 
