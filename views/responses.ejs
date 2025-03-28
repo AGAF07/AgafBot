@@ -1,0 +1,476 @@
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= error %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<div id="alert-container"></div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-plus-circle me-2"></i> Add New Response
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Nota:</strong> Você pode gerenciar as respostas de duas formas:
+          <ul>
+            <li>Adicionar novas respostas específicas para palavras-chave</li>
+            <li>Limpar todas as respostas existentes e começar do zero</li>
+          </ul>
+        </div>
+        
+        <div class="mb-3">
+          <button class="btn btn-warning" id="clearResponsesBtn">
+            <i class="fas fa-trash-alt me-1"></i> Limpar Todas as Respostas
+          </button>
+        </div>
+      
+        <form id="response-form" method="POST" action="/responses/add">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="keyword" class="form-label">Keyword</label>
+                <input type="text" class="form-control" id="keyword" name="keyword" required placeholder="e.g., pricing, hours, contact">
+                <div class="form-text">The bot will match messages containing this keyword.</div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="response" class="form-label">Response</label>
+                <textarea class="form-control" id="response" name="response" rows="3" required placeholder="Enter the response that should be sent when this keyword is detected..."></textarea>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Add Response
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-database me-2"></i> Add Company Knowledge Base
+      </div>
+      <div class="card-body">
+        <p class="text-muted">
+          Adicione informações gerais sobre sua empresa, produtos ou serviços. Estas informações serão utilizadas pela IA 
+          para responder perguntas quando não houver uma correspondência específica de palavras-chave.
+          <strong>O campo "Informação" é obrigatório.</strong>
+        </p>
+        
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Nota:</strong> Você pode gerenciar a base de conhecimento de duas formas:
+          <ul>
+            <li>Adicionar novas informações que serão combinadas com as existentes</li>
+            <li>Limpar todas as informações existentes e começar uma nova base de conhecimento</li>
+          </ul>
+        </div>
+        
+        <div class="mb-3">
+          <button class="btn btn-warning" id="clearKnowledgeBaseBtn">
+            <i class="fas fa-trash-alt me-1"></i> Limpar Base de Conhecimento
+          </button>
+        </div>
+        
+        <form id="knowledge-form" method="POST" action="/knowledge/add">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="title" class="form-label">Title (Optional)</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Company History, Products, Services">
+                <div class="form-text">An optional title to organize your knowledge base.</div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="information" class="form-label">Information</label>
+                <textarea class="form-control" id="information" name="information" rows="5" required placeholder="Enter company information that the AI can use to answer customer questions..."></textarea>
+                <div class="form-text">This information will be used by the AI when responding to user messages without specific keyword matches.</div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Add to Knowledge Base
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-list me-2"></i> Keyword-Based Responses
+      </div>
+      <div class="card-body">
+        <% if (responses && responses.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Keyword</th>
+                  <th>Response</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% responses.forEach(function(item) { %>
+                  <tr id="response-<%= item.id %>">
+                    <td><%= item.id %></td>
+                    <td><%= item.keyword %></td>
+                    <td><%= item.response.length > 100 ? item.response.substring(0, 100) + '...' : item.response %></td>
+                    <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+                    <td>
+                      <button class="btn btn-sm btn-primary edit-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="response" 
+                        data-keyword="<%= item.keyword %>" 
+                        data-response="<%= item.response %>">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger delete-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="response" 
+                        data-url="/responses/delete/<%= item.id %>">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No responses found. Add some responses to teach the bot how to respond to specific keywords.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-brain me-2"></i> Knowledge Base Entries
+      </div>
+      <div class="card-body">
+        <% if (knowledgeBase && knowledgeBase.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Information</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% knowledgeBase.forEach(function(item) { %>
+                  <tr id="knowledge-<%= item.id %>">
+                    <td><%= item.id %></td>
+                    <td><%= item.title || 'Untitled' %></td>
+                    <td><%= item.information.length > 100 ? item.information.substring(0, 100) + '...' : item.information %></td>
+                    <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+                    <td>
+                      <button class="btn btn-sm btn-primary edit-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="knowledge" 
+                        data-title="<%= item.title || '' %>" 
+                        data-information="<%= item.information %>">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger delete-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="knowledge" 
+                        data-url="/knowledge/delete/<%= item.id %>">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No knowledge base entries found. Add information about your company to help the AI respond to general questions.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Response Modal -->
+<div class="modal fade" id="edit-response-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Response</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="ajax-form" action="/responses/update/0" method="POST">
+          <div class="mb-3">
+            <label for="edit-keyword" class="form-label">Keyword</label>
+            <input type="text" class="form-control" id="edit-keyword" name="keyword" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit-response" class="form-label">Response</label>
+            <textarea class="form-control" id="edit-response" name="response" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Response</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Knowledge Base Modal -->
+<div class="modal fade" id="edit-knowledge-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Knowledge Base Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="ajax-form" action="/knowledge/update/0" method="POST">
+          <div class="mb-3">
+            <label for="edit-title" class="form-label">Title (Optional)</label>
+            <input type="text" class="form-control" id="edit-title" name="title">
+          </div>
+          <div class="mb-3">
+            <label for="edit-information" class="form-label">Information</label>
+            <textarea class="form-control" id="edit-information" name="information" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Knowledge Base Entry</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize edit buttons for knowledge base entries
+    const editButtons = document.querySelectorAll('.edit-btn[data-type="knowledge"]');
+    editButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        
+        // Show the edit modal
+        const modal = document.getElementById('edit-knowledge-modal');
+        const modalInstance = new bootstrap.Modal(modal);
+        
+        // Populate form fields
+        document.getElementById('edit-title').value = this.getAttribute('data-title') || '';
+        document.getElementById('edit-information').value = this.getAttribute('data-information') || '';
+        
+        // Set the form action to the correct endpoint
+        const form = modal.querySelector('form');
+        form.setAttribute('action', `/knowledge/update/${id}`);
+        
+        modalInstance.show();
+      });
+    });
+
+    // Clear Knowledge Base handler
+    const clearKnowledgeBaseBtn = document.getElementById('clearKnowledgeBaseBtn');
+    if (clearKnowledgeBaseBtn) {
+      clearKnowledgeBaseBtn.addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja limpar TODA a base de conhecimento? Esta ação não pode ser desfeita.')) {
+          fetch('/knowledge/clear-all', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showAlert('Base de conhecimento limpa com sucesso!', 'success');
+              
+              // Recarregar a página após 1 segundo
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else {
+              showAlert(data.error || 'Erro ao limpar a base de conhecimento', 'danger');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showAlert('Erro ao limpar a base de conhecimento', 'danger');
+          });
+        }
+      });
+    }
+    
+    // Existing Knowledge form handler
+    const knowledgeForm = document.getElementById('knowledge-form');
+    if (knowledgeForm) {
+      knowledgeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const information = document.getElementById('information').value;
+        const title = document.getElementById('title').value;
+        
+        if (!information) {
+          showAlert('O campo Informação é obrigatório.', 'danger');
+          return;
+        }
+        
+        fetch('/knowledge/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            information: information,
+            title: title
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('Informação adicionada com sucesso!', 'success');
+            document.getElementById('information').value = '';
+            document.getElementById('title').value = '';
+            
+            // Recarregar a página após 1 segundo para mostrar a nova entrada
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showAlert(data.error || 'Ocorreu um erro ao salvar as informações.', 'danger');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('Ocorreu um erro. Por favor, tente novamente.', 'danger');
+        });
+      });
+    }
+    
+    // Clear all responses handler
+    const clearResponsesBtn = document.getElementById('clearResponsesBtn');
+    if (clearResponsesBtn) {
+      clearResponsesBtn.addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja limpar TODAS as respostas? Esta ação não pode ser desfeita.')) {
+          fetch('/responses/clear-all', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showAlert('Todas as respostas foram removidas com sucesso!', 'success');
+              
+              // Recarregar a página após 1 segundo
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else {
+              showAlert(data.error || 'Erro ao limpar as respostas', 'danger');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showAlert('Erro ao limpar as respostas', 'danger');
+          });
+        }
+      });
+    }
+    
+    // Response form handler
+    const responseForm = document.getElementById('response-form');
+    if (responseForm) {
+      responseForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const keyword = document.getElementById('keyword').value;
+        const response = document.getElementById('response').value;
+        
+        if (!keyword || !response) {
+          showAlert('Palavra-chave e resposta são obrigatórias.', 'danger');
+          return;
+        }
+        
+        fetch('/responses/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            keyword: keyword,
+            response: response
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('Resposta adicionada com sucesso!', 'success');
+            document.getElementById('keyword').value = '';
+            document.getElementById('response').value = '';
+            
+            // Recarregar a página após 1 segundo para mostrar a nova entrada
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showAlert(data.error || 'Ocorreu um erro ao salvar a resposta.', 'danger');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('Ocorreu um erro. Por favor, tente novamente.', 'danger');
+        });
+      });
+    }
+    
+    // Função para mostrar alertas
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alert-container');
+      if (!alertContainer) return;
+      
+      const alertElement = document.createElement('div');
+      alertElement.className = `alert alert-${type} alert-dismissible fade show`;
+      alertElement.role = 'alert';
+      alertElement.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      alertContainer.appendChild(alertElement);
+      
+      // Automaticamente remover o alerta após 5 segundos
+      setTimeout(() => {
+        alertElement.remove();
+      }, 5000);
+    }
+  });
+</script> 

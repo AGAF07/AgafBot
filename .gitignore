@@ -1,0 +1,51 @@
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretório de sessão WhatsApp Web
+.wwebjs_auth/
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Banco de dados SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# Diretórios de cache
+.cache/
+.next/
+.nuxt/
+dist/
+build/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Diretório de cobertura de testes
+coverage/
+
+# Diretório de saída de compilação
+/dist/
+/out/
+/build/
+
+# Arquivos de configuração específicos do IDE
+.idea/
+.vscode/
+*.swp
+*.swo 

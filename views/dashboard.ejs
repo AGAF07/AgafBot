@@ -1,0 +1,211 @@
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= error %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<div id="alert-container"></div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card dashboard-card">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-comment-dots me-2 text-primary"></i> WhatsApp Status</h5>
+        <div class="mt-3">
+          <div class="qr-code-container text-center mb-3">
+            <% if (connectionStatus === 'qr_ready' && qrCode) { %>
+              <div id="qrcode" class="d-flex justify-content-center"></div>
+            <% } else { %>
+              <p class="text-muted">QR code will appear here if authentication is needed</p>
+              <div id="qr-code-placeholder">
+                <i class="fas fa-qrcode fa-5x text-muted"></i>
+              </div>
+            <% } %>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span id="connection-status">
+              <% if (connectionStatus === 'connected') { %>
+                <span class="badge bg-success">Connected</span>
+              <% } else if (connectionStatus === 'qr_ready') { %>
+                <span class="badge bg-warning">QR Code Ready - Scan with WhatsApp</span>
+              <% } else if (connectionStatus === 'authenticated') { %>
+                <span class="badge bg-primary">Authenticated</span>
+              <% } else if (connectionStatus === 'auth_failure') { %>
+                <span class="badge bg-danger">Authentication Failed</span>
+              <% } else if (connectionStatus === 'disconnected') { %>
+                <span class="badge bg-secondary">Disconnected</span>
+              <% } else { %>
+                <span class="badge bg-secondary">Unknown</span>
+              <% } %>
+            </span>
+            <button class="btn btn-sm btn-outline-primary" id="refresh-status">
+              <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card dashboard-card">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-brain me-2 text-primary"></i> AI Status</h5>
+        <div class="mt-3">
+          <p><strong>API Key:</strong> <span id="api-key-status">••••••••••••••••••</span></p>
+          <p><strong>Model:</strong> llama3-8b-8192</p>
+          <a href="/settings" class="btn btn-primary btn-sm">
+            <i class="fas fa-cog me-1"></i> Configure API Key
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-4">
+    <div class="card dashboard-card text-center">
+      <div class="card-body">
+        <div class="features-icon">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h5 class="card-title">Responses</h5>
+        <p class="card-text">Manage predefined responses for the bot.</p>
+        <a href="/responses" class="btn btn-primary">Manage Responses</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card dashboard-card text-center">
+      <div class="card-body">
+        <div class="features-icon">
+          <i class="fas fa-list"></i>
+        </div>
+        <h5 class="card-title">Menus</h5>
+        <p class="card-text">Create interactive menu systems for users.</p>
+        <a href="/menus" class="btn btn-primary">Manage Menus</a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card dashboard-card text-center">
+      <div class="card-body">
+        <div class="features-icon">
+          <i class="fas fa-cog"></i>
+        </div>
+        <h5 class="card-title">Settings</h5>
+        <p class="card-text">Configure API keys and system settings.</p>
+        <a href="/settings" class="btn btn-primary">Manage Settings</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const connectionStatus = document.getElementById('connection-status');
+    const refreshButton = document.getElementById('refresh-status');
+    const qrCodeContainer = document.getElementById('qrcode');
+    const qrPlaceholder = document.getElementById('qr-code-placeholder');
+    
+    // Generate QR code if available
+    <% if (connectionStatus === 'qr_ready' && qrCode) { %>
+      if (qrCodeContainer) {
+        qrCodeContainer.innerHTML = ''; // Clear any existing content
+        QRCode.toCanvas(document.createElement('canvas'), '<%= qrCode %>', function (error, canvas) {
+          if (error) {
+            console.error('Error generating QR code:', error);
+          } else {
+            qrCodeContainer.appendChild(canvas);
+          }
+        });
+      }
+    <% } %>
+    
+    // Poll for status updates
+    let statusInterval;
+    
+    function startStatusPolling() {
+      statusInterval = setInterval(checkStatus, 5000); // Check every 5 seconds
+    }
+    
+    function stopStatusPolling() {
+      if (statusInterval) {
+        clearInterval(statusInterval);
+      }
+    }
+    
+    function checkStatus() {
+      fetch('/api/whatsapp-status')
+        .then(response => response.json())
+        .then(data => {
+          // Update connection status
+          if (data.status === 'connected') {
+            connectionStatus.innerHTML = '<span class="badge bg-success">Connected</span>';
+            if (qrCodeContainer) {
+              qrCodeContainer.innerHTML = '';
+              if (qrPlaceholder) qrPlaceholder.style.display = 'block';
+            }
+            stopStatusPolling(); // Stop polling once connected
+          } else if (data.status === 'qr_ready' && data.qrCode) {
+            connectionStatus.innerHTML = '<span class="badge bg-warning">QR Code Ready - Scan with WhatsApp</span>';
+            
+            // Generate new QR code
+            if (!qrCodeContainer) {
+              // Create QR code element if it doesn't exist
+              const qrDiv = document.createElement('div');
+              qrDiv.id = 'qrcode';
+              qrDiv.className = 'd-flex justify-content-center';
+              document.querySelector('.qr-code-container').appendChild(qrDiv);
+              if (qrPlaceholder) qrPlaceholder.style.display = 'none';
+              
+              // Generate QR code using canvas
+              QRCode.toCanvas(document.createElement('canvas'), data.qrCode, function(error, canvas) {
+                if (error) {
+                  console.error('Error generating QR code:', error);
+                } else {
+                  qrDiv.appendChild(canvas);
+                }
+              });
+            } else {
+              // Update existing QR code
+              qrCodeContainer.innerHTML = '';
+              if (qrPlaceholder) qrPlaceholder.style.display = 'none';
+              
+              // Generate QR code using canvas
+              QRCode.toCanvas(document.createElement('canvas'), data.qrCode, function(error, canvas) {
+                if (error) {
+                  console.error('Error generating QR code:', error);
+                } else {
+                  qrCodeContainer.appendChild(canvas);
+                }
+              });
+            }
+          } else if (data.status === 'authenticated') {
+            connectionStatus.innerHTML = '<span class="badge bg-primary">Authenticated</span>';
+          } else if (data.status === 'auth_failure') {
+            connectionStatus.innerHTML = '<span class="badge bg-danger">Authentication Failed</span>';
+          } else if (data.status === 'disconnected') {
+            connectionStatus.innerHTML = '<span class="badge bg-secondary">Disconnected</span>';
+          }
+        })
+        .catch(error => {
+          console.error('Error checking status:', error);
+        });
+    }
+    
+    // Start polling for status updates
+    startStatusPolling();
+    
+    // Refresh button functionality
+    refreshButton.addEventListener('click', function() {
+      connectionStatus.innerHTML = '<span class="badge bg-warning">Refreshing...</span>';
+      checkStatus();
+    });
+  });
+</script> 

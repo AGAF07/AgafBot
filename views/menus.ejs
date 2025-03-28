@@ -1,0 +1,190 @@
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= error %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<div id="alert-container"></div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-plus-circle me-2"></i> Add New Menu Item
+      </div>
+      <div class="card-body">
+        <form class="ajax-form reset-after-submit" action="/menus/add" method="POST" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required placeholder="Menu item title">
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Menu item description (optional)"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="parent_id" class="form-label">Parent Menu</label>
+                <select class="form-select" id="parent_id" name="parent_id">
+                  <option value="">None (Main Menu)</option>
+                  <% if (menuOptions && menuOptions.length > 0) { %>
+                    <% menuOptions.forEach(function(item) { %>
+                      <option value="<%= item.id %>"><%= item.title %></option>
+                    <% }); %>
+                  <% } %>
+                </select>
+                <div class="form-text">Select a parent menu to create a submenu.</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="media" class="form-label">Media (Optional)</label>
+                <input type="file" class="form-control" id="media" name="media">
+                <div class="form-text">Upload an image, video, or PDF (max 10MB).</div>
+              </div>
+              <div class="mt-4">
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <strong>Tips:</strong>
+                  <ul class="mb-0">
+                    <li>Main menu items appear when the user types "!menu"</li>
+                    <li>Submenus appear when a user selects a menu option</li>
+                    <li>Users navigate menus by typing "!option [ID]"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Add Menu Item
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-list me-2"></i> Menu Structure
+      </div>
+      <div class="card-body">
+        <% if (menus && menus.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Parent</th>
+                  <th>Description</th>
+                  <th>Media</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% menus.forEach(function(item) { %>
+                  <tr id="menu-<%= item.id %>">
+                    <td><%= item.id %></td>
+                    <td><%= item.title %></td>
+                    <td><%= item.parent_name %></td>
+                    <td><%= item.description ? (item.description.length > 50 ? item.description.substring(0, 50) + '...' : item.description) : '' %></td>
+                    <td>
+                      <% if (item.media_url) { %>
+                        <% if (item.media_type === 'image') { %>
+                          <img src="<%= item.media_url %>" width="50" height="50" class="img-thumbnail">
+                        <% } else if (item.media_type === 'video') { %>
+                          <i class="fas fa-film text-info"></i>
+                        <% } else if (item.media_type === 'application') { %>
+                          <i class="fas fa-file-pdf text-danger"></i>
+                        <% } %>
+                      <% } else { %>
+                        -
+                      <% } %>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-primary edit-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="menu" 
+                        data-title="<%= item.title %>" 
+                        data-description="<%= item.description || '' %>"
+                        data-parent_id="<%= item.parent_id || '' %>">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger delete-btn" 
+                        data-id="<%= item.id %>" 
+                        data-type="menu" 
+                        data-url="/menus/delete/<%= item.id %>">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No menu items found. Add some items to create your menu structure.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Menu Modal -->
+<div class="modal fade" id="edit-menu-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Menu Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="ajax-form" action="/menus/update/0" method="POST" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="edit-title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="edit-title" name="title" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit-description" class="form-label">Description</label>
+                <textarea class="form-control" id="edit-description" name="description" rows="3"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="edit-parent_id" class="form-label">Parent Menu</label>
+                <select class="form-select" id="edit-parent_id" name="parent_id">
+                  <option value="">None (Main Menu)</option>
+                  <% if (menuOptions && menuOptions.length > 0) { %>
+                    <% menuOptions.forEach(function(item) { %>
+                      <option value="<%= item.id %>"><%= item.title %></option>
+                    <% }); %>
+                  <% } %>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="edit-media" class="form-label">New Media (Optional)</label>
+                <input type="file" class="form-control" id="edit-media" name="media">
+                <div class="form-text">Upload a new image, video, or PDF to replace the existing one.</div>
+              </div>
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="keep_media" name="keep_media" value="true" checked>
+                <label class="form-check-label" for="keep_media">Keep existing media if no new file is uploaded</label>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Menu Item</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div> 

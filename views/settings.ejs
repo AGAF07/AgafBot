@@ -1,0 +1,264 @@
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= error %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title"><i class="fas fa-key me-2 text-primary"></i> API Key Configuration</h2>
+        
+        <% if (apiKey) { %>
+          <div class="alert alert-info">
+            <p>A sua chave API Groq está configurada e protegida.</p>
+            <p>Status: <span class="badge bg-success">Ativa</span></p>
+          </div>
+          
+          <div class="mb-3">
+            <label for="apiKeyInput" class="form-label">Groq API Key</label>
+            <div class="input-group">
+              <input 
+                type="password" 
+                class="form-control" 
+                id="apiKeyInput" 
+                value="••••••••••••••••••••••••••••••••••••••••••" 
+                disabled
+                aria-describedby="apiKeyHelpBlock"
+              >
+              <button class="btn btn-outline-danger" type="button" id="clearApiKeyBtn">
+                <i class="fas fa-trash-alt"></i> Remover
+              </button>
+            </div>
+            <div id="apiKeyHelpBlock" class="form-text">
+              Por motivos de segurança, a chave API completa não é exibida. Para alterá-la, remova a atual e adicione uma nova.
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-warning">
+            <p>Você ainda não configurou sua chave API Groq.</p>
+            <p>Status: <span class="badge bg-danger">Não configurada</span></p>
+          </div>
+          
+          <div class="mb-3">
+            <label for="apiKeyInput" class="form-label">Groq API Key</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="apiKeyInput" 
+              placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              aria-describedby="apiKeyHelpBlock"
+            >
+            <div id="apiKeyHelpBlock" class="form-text">
+              Insira sua chave API Groq. Ela será armazenada de forma segura no banco de dados.
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" id="saveApiKeyBtn">
+            <i class="fas fa-save me-1"></i> Salvar API Key
+          </button>
+        <% } %>
+        
+        <% if (apiKey) { %>
+          <button class="btn btn-primary" id="changeApiKeyBtn">
+            <i class="fas fa-exchange-alt me-1"></i> Alterar API Key
+          </button>
+        <% } %>
+        
+        <div id="apiKeyChangeForm" class="mt-3" style="display: none;">
+          <div class="mb-3">
+            <label for="newApiKeyInput" class="form-label">Nova Groq API Key</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="newApiKeyInput" 
+              placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            >
+          </div>
+          
+          <button class="btn btn-success" id="updateApiKeyBtn">
+            <i class="fas fa-save me-1"></i> Salvar Nova API Key
+          </button>
+          <button class="btn btn-outline-secondary" id="cancelChangeBtn">
+            <i class="fas fa-times me-1"></i> Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-language me-2 text-primary"></i> Configuração de Idioma</h5>
+        <p>Escolha o idioma que o bot deve usar para responder às mensagens:</p>
+        
+        <div class="mb-3">
+          <select class="form-select" id="botLanguageSelect">
+            <option value="pt" <%= botLanguage === 'pt' ? 'selected' : '' %>>Português</option>
+            <option value="en" <%= botLanguage === 'en' ? 'selected' : '' %>>English</option>
+            <option value="es" <%= botLanguage === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="fr" <%= botLanguage === 'fr' ? 'selected' : '' %>>Français</option>
+            <option value="ru" <%= botLanguage === 'ru' ? 'selected' : '' %>>Русский (Russo)</option>
+            <option value="zh" <%= botLanguage === 'zh' ? 'selected' : '' %>>中文 (Chinês)</option>
+            <option value="tr" <%= botLanguage === 'tr' ? 'selected' : '' %>>Türkçe (Turco)</option>
+            <option value="ja" <%= botLanguage === 'ja' ? 'selected' : '' %>>日本語 (Japonês)</option>
+            <option value="ar" <%= botLanguage === 'ar' ? 'selected' : '' %>>العربية (Árabe)</option>
+            <option value="ko" <%= botLanguage === 'ko' ? 'selected' : '' %>>한국어 (Coreano)</option>
+          </select>
+          <div class="form-text">
+            O idioma selecionado será usado pelo bot quando não houver uma resposta específica definida.
+          </div>
+        </div>
+        
+        <button class="btn btn-primary" id="saveLanguageBtn">
+          <i class="fas fa-save me-1"></i> Salvar Idioma
+        </button>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-info-circle me-2 text-primary"></i> API Key Information</h5>
+        <p>Your API key is stored securely in the local database.</p>
+        <p>The AI model uses your API key to generate human-like responses based on your database content.</p>
+        <p><strong>Current Model:</strong> llama3-8b-8192</p>
+        
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i> Keep your API key secure. Do not share it with others.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const changeApiKeyBtn = document.getElementById('changeApiKeyBtn');
+    const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+    const apiKeyChangeForm = document.getElementById('apiKeyChangeForm');
+    const updateApiKeyBtn = document.getElementById('updateApiKeyBtn');
+    const cancelChangeBtn = document.getElementById('cancelChangeBtn');
+    const saveLanguageBtn = document.getElementById('saveLanguageBtn');
+    
+    // API Key handlers
+    if (saveApiKeyBtn) {
+      saveApiKeyBtn.addEventListener('click', function() {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        
+        if (!apiKey) {
+          showAlert('API key is required', 'danger');
+          return;
+        }
+        
+        updateApiKey(apiKey);
+      });
+    }
+    
+    if (changeApiKeyBtn) {
+      changeApiKeyBtn.addEventListener('click', function() {
+        apiKeyChangeForm.style.display = 'block';
+        changeApiKeyBtn.style.display = 'none';
+      });
+    }
+    
+    if (cancelChangeBtn) {
+      cancelChangeBtn.addEventListener('click', function() {
+        apiKeyChangeForm.style.display = 'none';
+        changeApiKeyBtn.style.display = 'block';
+        document.getElementById('newApiKeyInput').value = '';
+      });
+    }
+    
+    if (clearApiKeyBtn) {
+      clearApiKeyBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to remove your API key? The AI functionality will not work without an API key.')) {
+          updateApiKey('');
+        }
+      });
+    }
+    
+    if (updateApiKeyBtn) {
+      updateApiKeyBtn.addEventListener('click', function() {
+        const newApiKey = document.getElementById('newApiKeyInput').value.trim();
+        
+        if (!newApiKey) {
+          showAlert('New API key is required', 'danger');
+          return;
+        }
+        
+        updateApiKey(newApiKey);
+      });
+    }
+    
+    // Language selection handler
+    if (saveLanguageBtn) {
+      saveLanguageBtn.addEventListener('click', function() {
+        const language = document.getElementById('botLanguageSelect').value;
+        
+        fetch('/settings/update-language', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ language }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('Idioma atualizado com sucesso!', 'success');
+          } else {
+            showAlert(data.error || 'Erro ao atualizar o idioma', 'danger');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showAlert('Erro ao atualizar o idioma', 'danger');
+        });
+      });
+    }
+    
+    function updateApiKey(apiKey) {
+      fetch('/settings/update-api-key', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ apiKey }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('API key updated successfully', 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          showAlert(data.error || 'Error updating API key', 'danger');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error updating API key', 'danger');
+      });
+    }
+    
+    function showAlert(message, type) {
+      const alertContainer = document.createElement('div');
+      alertContainer.className = `alert alert-${type} alert-dismissible fade show`;
+      alertContainer.role = 'alert';
+      alertContainer.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      const container = document.querySelector('.container');
+      container.insertBefore(alertContainer, container.firstChild);
+      
+      setTimeout(() => {
+        alertContainer.remove();
+      }, 5000);
+    }
+  });
+</script> 
